@@ -1,0 +1,241 @@
+# Cursor Rules for Movie API Project
+
+## Project Overview
+This is a Go REST API project implementing Hexagonal Architecture (Ports and Adapters) for a movie management system.
+
+## Architecture Rules
+
+### 1. Hexagonal Architecture Compliance
+- **Domain Layer** (`service/`): Contains pure business logic with no external dependencies
+- **Primary Adapters** (`handler/`): HTTP adapters that convert HTTP requests to domain calls
+- **Secondary Adapters** (`repository/`): Database adapters that implement domain interfaces
+- **Dependency Injection**: All dependencies must be injected, no global variables or singletons
+
+### 2. SOLID Principles
+- **Single Responsibility**: Each struct/function has one clear purpose
+- **Open/Closed**: Extend functionality through interfaces, not by modifying existing code
+- **Liskov Substitution**: All implementations of an interface must be interchangeable
+- **Interface Segregation**: Keep interfaces small and focused
+- **Dependency Inversion**: Depend on abstractions, not concrete implementations
+
+## Code Style Rules
+
+### 1. Language
+- **All code, comments, and documentation must be in English**
+- **All error messages must be in English**
+- **All variable names, function names, and struct names must be in English**
+
+### 2. Naming Conventions
+- **Packages**: Use lowercase, single word (e.g., `handler`, `service`, `repository`)
+- **Interfaces**: Use descriptive names ending with the type (e.g., `MovieService`, `MovieRepository`)
+- **Structs**: Use descriptive names (e.g., `MovieHandler`, `gormMovieRepository`)
+- **Functions**: Use camelCase with descriptive names (e.g., `GetMovie`, `CreateMovie`)
+- **Variables**: Use camelCase with descriptive names (e.g., `movieID`, `pageNumber`)
+
+### 3. File Organization
+- **One interface per file** when possible
+- **One implementation per file** when possible
+- **Group related functionality** in the same package
+- **Keep files under 300 lines** when possible
+
+### 4. Comments and Documentation
+- **All exported functions must have comments** starting with the function name
+- **All exported types must have comments** explaining their purpose
+- **Use clear, concise English** in all comments
+- **Document complex business logic** with inline comments
+
+## Package-Specific Rules
+
+### 1. Service Package (`service/`)
+- **No HTTP dependencies** (no `gin.Context`, no `http` package)
+- **No database dependencies** (no `gorm.DB`, no `database/sql`)
+- **Pure business logic only**
+- **Return domain errors** with clear English messages
+- **Include business validations** for all operations
+
+### 2. Repository Package (`repository/`)
+- **Define interfaces** for all data access operations
+- **Implement concrete adapters** for specific databases
+- **Use dependency injection** for database connections
+- **Handle database-specific errors** and convert to domain errors
+- **No business logic** - only data access
+
+### 3. Handler Package (`handler/`)
+- **Single responsibility**: Convert HTTP to domain calls
+- **Parse and validate** HTTP input
+- **Call service methods** with parsed data
+- **Format HTTP responses** from service results
+- **Handle HTTP-specific concerns** (status codes, headers, etc.)
+
+### 4. Models Package (`models/`)
+- **Define domain entities** with clear structure
+- **Include validation tags** for request/response models
+- **Use JSON tags** for API serialization
+- **Keep models focused** on data representation
+
+## Testing Rules
+
+### 1. Test Structure
+- **Use table-driven tests** for multiple test cases
+- **Follow AAA pattern**: Arrange, Act, Assert
+- **Mock external dependencies** (databases, HTTP clients)
+- **Test both success and failure cases**
+
+### 2. Test Naming
+- **Test function names**: `Test[FunctionName]_[Scenario]`
+- **Use descriptive test names** that explain the scenario
+- **Group related tests** in the same test file
+
+### 3. Test Coverage
+- **Aim for 80%+ coverage** on business logic
+- **Test all error paths** in service layer
+- **Test HTTP status codes** in handler layer
+- **Test database operations** in repository layer
+
+## Error Handling Rules
+
+### 1. Error Messages
+- **All error messages must be in English**
+- **Use clear, user-friendly messages**
+- **Include relevant context** when appropriate
+- **Avoid technical jargon** in user-facing errors
+
+### 2. Error Types
+- **Use domain-specific errors** in service layer
+- **Convert database errors** to domain errors in repository
+- **Return appropriate HTTP status codes** in handlers
+- **Log errors** for debugging purposes
+
+## API Design Rules
+
+### 1. RESTful Endpoints
+- **Use standard HTTP methods** (GET, POST, PUT, DELETE)
+- **Use plural nouns** for resource collections (`/movies`)
+- **Use singular nouns** for individual resources (`/movies/:id`)
+- **Use query parameters** for filtering and pagination
+
+### 2. Response Format
+- **Consistent JSON structure** across all endpoints
+- **Include pagination metadata** for list endpoints
+- **Use descriptive field names** in JSON responses
+- **Include relevant relationships** when requested
+
+### 3. Status Codes
+- **200 OK**: Successful GET, PUT, DELETE operations
+- **201 Created**: Successful POST operations
+- **400 Bad Request**: Invalid input data
+- **404 Not Found**: Resource not found
+- **500 Internal Server Error**: Server-side errors
+
+## Security Rules
+
+### 1. Input Validation
+- **Validate all user input** at handler level
+- **Use struct tags** for validation rules
+- **Sanitize input** to prevent injection attacks
+- **Return clear validation errors** to users
+
+### 2. Error Information
+- **Don't expose internal errors** to users
+- **Log detailed errors** for debugging
+- **Return generic messages** for security-sensitive operations
+
+## Performance Rules
+
+### 1. Database Operations
+- **Use pagination** for large result sets
+- **Optimize queries** with proper indexing
+- **Use transactions** for multi-step operations
+- **Avoid N+1 queries** with proper joins
+
+### 2. Memory Management
+- **Use pointers appropriately** for large structs
+- **Avoid memory leaks** in long-running operations
+- **Use context cancellation** for timeouts
+
+## Documentation Rules
+
+### 1. Code Documentation
+- **Document all exported functions** with clear descriptions
+- **Include examples** for complex functions
+- **Document error conditions** and return values
+- **Keep documentation up to date** with code changes
+
+### 2. API Documentation
+- **Document all endpoints** with request/response examples
+- **Include authentication requirements** if applicable
+- **Document rate limits** and usage guidelines
+- **Provide clear error response examples**
+
+## Git and Version Control Rules
+
+### 1. Commit Messages
+- **Use conventional commit format**: `type(scope): description`
+- **Write clear, descriptive commit messages** in English
+- **Reference issue numbers** when applicable
+- **Keep commits focused** on single changes
+
+### 2. Branch Naming
+- **Use descriptive branch names**: `feature/user-authentication`
+- **Use prefixes**: `feature/`, `bugfix/`, `hotfix/`, `refactor/`
+- **Keep branches short-lived** and focused
+
+## Dependencies Rules
+
+### 1. Dependency Management
+- **Use Go modules** for dependency management
+- **Pin dependency versions** in go.mod
+- **Regularly update dependencies** for security patches
+- **Minimize external dependencies** when possible
+
+### 2. Dependency Injection
+- **Inject all dependencies** through constructors
+- **Use interfaces** for dependency contracts
+- **Avoid global state** and singletons
+- **Test with mock implementations**
+
+## Code Review Checklist
+
+Before submitting code for review, ensure:
+
+- [ ] All code follows the architectural patterns
+- [ ] All comments and documentation are in English
+- [ ] All error messages are in English
+- [ ] Tests are written and passing
+- [ ] No external dependencies in domain layer
+- [ ] Proper error handling implemented
+- [ ] Input validation is in place
+- [ ] Code is properly formatted with `gofmt`
+- [ ] No unused imports or variables
+- [ ] Functions are appropriately sized and focused
+
+## Tools and Linting
+
+### 1. Required Tools
+- **gofmt**: Code formatting
+- **golint**: Code style checking
+- **go vet**: Static analysis
+- **go test**: Unit testing
+- **go mod tidy**: Dependency management
+
+### 2. IDE Configuration
+- **Enable Go modules** support
+- **Configure auto-formatting** on save
+- **Enable linting** and error checking
+- **Use Go extension** for VS Code/Cursor
+
+## Emergency Rules
+
+### 1. Critical Issues
+- **Security vulnerabilities** must be fixed immediately
+- **Data loss issues** take highest priority
+- **Service availability** issues are critical
+- **Document all emergency fixes** for later review
+
+### 2. Hotfixes
+- **Create hotfix branch** from production
+- **Minimize changes** to fix only the critical issue
+- **Test thoroughly** before deployment
+- **Document the fix** and create follow-up ticket
+
+Remember: The goal is to maintain a clean, maintainable, and scalable codebase that follows best practices and is easy for the team to work with. 

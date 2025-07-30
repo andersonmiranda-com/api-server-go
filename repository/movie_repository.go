@@ -1,22 +1,37 @@
 package repository
 
 import (
-	"api-server/database"
 	"api-server/models"
 	"errors"
 
 	"gorm.io/gorm"
 )
 
-type MovieRepository struct {
+// MovieRepository defines the contract for the movie repository
+type MovieRepository interface {
+	FindAll(page, limit int, genreID, directorID *uint, minRating *float64) ([]models.Movie, int64, error)
+	FindByID(id uint) (*models.Movie, error)
+	Create(movie *models.Movie) error
+	Update(id uint, updates map[string]interface{}) error
+	Delete(id uint) error
+	FindByGenre(genreID uint, page, limit int) ([]models.Movie, int64, error)
+	FindByDirector(directorID uint, page, limit int) ([]models.Movie, int64, error)
+	FindByActor(actorID uint, page, limit int) ([]models.Movie, int64, error)
+	SearchByTitle(title string, page, limit int) ([]models.Movie, int64, error)
+	GetTopRated(limit int) ([]models.Movie, error)
+}
+
+// gormMovieRepository is the concrete implementation using GORM
+type gormMovieRepository struct {
 	db *gorm.DB
 }
 
-func NewMovieRepository() *MovieRepository {
-	return &MovieRepository{db: database.DB}
+// NewMovieRepository creates a new repository instance with dependency injection
+func NewMovieRepository(db *gorm.DB) MovieRepository {
+	return &gormMovieRepository{db: db}
 }
 
-func (r *MovieRepository) FindAll(page, limit int, genreID, directorID *uint, minRating *float64) ([]models.Movie, int64, error) {
+func (r *gormMovieRepository) FindAll(page, limit int, genreID, directorID *uint, minRating *float64) ([]models.Movie, int64, error) {
 	var movies []models.Movie
 	var total int64
 
@@ -47,7 +62,7 @@ func (r *MovieRepository) FindAll(page, limit int, genreID, directorID *uint, mi
 	return movies, total, nil
 }
 
-func (r *MovieRepository) FindByID(id uint) (*models.Movie, error) {
+func (r *gormMovieRepository) FindByID(id uint) (*models.Movie, error) {
 	var movie models.Movie
 	err := r.db.Preload("Genre").Preload("Director").Preload("Actors").Preload("Reviews.User").First(&movie, id).Error
 	if err != nil {
@@ -59,11 +74,11 @@ func (r *MovieRepository) FindByID(id uint) (*models.Movie, error) {
 	return &movie, nil
 }
 
-func (r *MovieRepository) Create(movie *models.Movie) error {
+func (r *gormMovieRepository) Create(movie *models.Movie) error {
 	return r.db.Create(movie).Error
 }
 
-func (r *MovieRepository) Update(id uint, updates map[string]interface{}) error {
+func (r *gormMovieRepository) Update(id uint, updates map[string]interface{}) error {
 	result := r.db.Model(&models.Movie{}).Where("id = ?", id).Updates(updates)
 	if result.Error != nil {
 		return result.Error
@@ -74,7 +89,7 @@ func (r *MovieRepository) Update(id uint, updates map[string]interface{}) error 
 	return nil
 }
 
-func (r *MovieRepository) Delete(id uint) error {
+func (r *gormMovieRepository) Delete(id uint) error {
 	result := r.db.Delete(&models.Movie{}, id)
 	if result.Error != nil {
 		return result.Error
@@ -85,7 +100,7 @@ func (r *MovieRepository) Delete(id uint) error {
 	return nil
 }
 
-func (r *MovieRepository) FindByGenre(genreID uint, page, limit int) ([]models.Movie, int64, error) {
+func (r *gormMovieRepository) FindByGenre(genreID uint, page, limit int) ([]models.Movie, int64, error) {
 	var movies []models.Movie
 	var total int64
 
@@ -105,7 +120,7 @@ func (r *MovieRepository) FindByGenre(genreID uint, page, limit int) ([]models.M
 	return movies, total, nil
 }
 
-func (r *MovieRepository) FindByDirector(directorID uint, page, limit int) ([]models.Movie, int64, error) {
+func (r *gormMovieRepository) FindByDirector(directorID uint, page, limit int) ([]models.Movie, int64, error) {
 	var movies []models.Movie
 	var total int64
 
@@ -125,7 +140,7 @@ func (r *MovieRepository) FindByDirector(directorID uint, page, limit int) ([]mo
 	return movies, total, nil
 }
 
-func (r *MovieRepository) FindByActor(actorID uint, page, limit int) ([]models.Movie, int64, error) {
+func (r *gormMovieRepository) FindByActor(actorID uint, page, limit int) ([]models.Movie, int64, error) {
 	var movies []models.Movie
 	var total int64
 
@@ -146,7 +161,7 @@ func (r *MovieRepository) FindByActor(actorID uint, page, limit int) ([]models.M
 	return movies, total, nil
 }
 
-func (r *MovieRepository) SearchByTitle(title string, page, limit int) ([]models.Movie, int64, error) {
+func (r *gormMovieRepository) SearchByTitle(title string, page, limit int) ([]models.Movie, int64, error) {
 	var movies []models.Movie
 	var total int64
 
@@ -167,7 +182,7 @@ func (r *MovieRepository) SearchByTitle(title string, page, limit int) ([]models
 	return movies, total, nil
 }
 
-func (r *MovieRepository) GetTopRated(limit int) ([]models.Movie, error) {
+func (r *gormMovieRepository) GetTopRated(limit int) ([]models.Movie, error) {
 	var movies []models.Movie
 	err := r.db.Model(&models.Movie{}).Order("rating DESC").Limit(limit).
 		Preload("Genre").Preload("Director").Preload("Actors").Find(&movies).Error

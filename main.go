@@ -2,6 +2,8 @@ package main
 
 import (
 	"api-server/database"
+	"api-server/handler"
+	"api-server/repository"
 	"api-server/service"
 	"log"
 
@@ -32,9 +34,18 @@ func main() {
 		c.Next()
 	})
 
-	// Setup routes
-	movieService := service.NewService()
-	service.SetupRoutes(app, movieService)
+	// Dependency Injection - Hexagonal Architecture
+	// 1. Create repository (data layer)
+	movieRepo := repository.NewMovieRepository(database.DB)
+	
+	// 2. Create service (business logic)
+	movieService := service.NewMovieService(movieRepo)
+	
+	// 3. Create handler (HTTP adapter)
+	movieHandler := handler.NewMovieHandler(movieService)
+
+	// 4. Configure routes
+	handler.SetupRoutes(app, movieHandler)
 
 	// Start server
 	log.Println("🚀 Server starting on port 4444...")
