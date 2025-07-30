@@ -14,7 +14,7 @@ var DB *gorm.DB
 func InitDB() {
 	var err error
 	DB, err = gorm.Open(sqlite.Open("api_server.db"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Error), // Solo mostrar errores
 	})
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
@@ -36,12 +36,12 @@ func seedData() {
 	if count == 0 {
 		// Create sample genres
 		genres := []models.Genre{
-			{Name: "Acción", Description: "Películas de acción y aventura"},
-			{Name: "Comedia", Description: "Películas cómicas y divertidas"},
-			{Name: "Drama", Description: "Películas dramáticas"},
-			{Name: "Terror", Description: "Películas de terror y suspenso"},
-			{Name: "Ciencia Ficción", Description: "Películas de ciencia ficción"},
-			{Name: "Romance", Description: "Películas románticas"},
+			{Name: "Action", Description: "Action and adventure movies"},
+			{Name: "Comedy", Description: "Funny and entertaining movies"},
+			{Name: "Drama", Description: "Dramatic movies"},
+			{Name: "Horror", Description: "Horror and suspense movies"},
+			{Name: "Science Fiction", Description: "Science fiction movies"},
+			{Name: "Romance", Description: "Romantic movies"},
 		}
 		DB.Create(&genres)
 
@@ -49,18 +49,18 @@ func seedData() {
 		directors := []models.Director{
 			{
 				Name:        "Christopher Nolan",
-				Biography:   "Director británico conocido por Inception, Interstellar y The Dark Knight",
-				Nationality: "Británico",
+				Biography:   "British director known for Inception, Interstellar and The Dark Knight",
+				Nationality: "British",
 			},
 			{
 				Name:        "Quentin Tarantino",
-				Biography:   "Director estadounidense conocido por Pulp Fiction y Kill Bill",
-				Nationality: "Estadounidense",
+				Biography:   "American director known for Pulp Fiction and Kill Bill",
+				Nationality: "American",
 			},
 			{
 				Name:        "Greta Gerwig",
-				Biography:   "Directora estadounidense conocida por Lady Bird y Barbie",
-				Nationality: "Estadounidense",
+				Biography:   "American director known for Lady Bird and Barbie",
+				Nationality: "American",
 			},
 		}
 		DB.Create(&directors)
@@ -69,23 +69,23 @@ func seedData() {
 		actors := []models.Actor{
 			{
 				Name:        "Leonardo DiCaprio",
-				Biography:   "Actor estadounidense ganador del Oscar",
-				Nationality: "Estadounidense",
+				Biography:   "American actor and Oscar winner",
+				Nationality: "American",
 			},
 			{
 				Name:        "Margot Robbie",
-				Biography:   "Actriz australiana conocida por Barbie y Suicide Squad",
-				Nationality: "Australiana",
+				Biography:   "Australian actress known for Barbie and Suicide Squad",
+				Nationality: "Australian",
 			},
 			{
 				Name:        "Tom Hardy",
-				Biography:   "Actor británico conocido por Mad Max y Venom",
-				Nationality: "Británico",
+				Biography:   "British actor known for Mad Max and Venom",
+				Nationality: "British",
 			},
 			{
 				Name:        "Emma Stone",
-				Biography:   "Actriz estadounidense ganadora del Oscar",
-				Nationality: "Estadounidense",
+				Biography:   "American actress and Oscar winner",
+				Nationality: "American",
 			},
 		}
 		DB.Create(&actors)
@@ -102,40 +102,40 @@ func seedData() {
 		movies := []models.Movie{
 			{
 				Title:       "Inception",
-				Description: "Un ladrón que roba información corporativa a través del uso de la tecnología de compartir sueños, recibe la tarea inversa de plantar una idea en la mente de un CEO.",
+				Description: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
 				ReleaseYear: 2010,
 				Duration:    148,
 				Rating:      8.8,
 				PosterURL:   "https://example.com/inception.jpg",
 				TrailerURL:  "https://example.com/inception-trailer.mp4",
-				GenreID:     &genres[4].ID, // Ciencia Ficción
+				GenreID:     &genres[4].ID, // Science Fiction
 				DirectorID:  &directors[0].ID,
 			},
 			{
 				Title:       "Barbie",
-				Description: "Barbie sufre una crisis existencial y viaja al mundo real para encontrar la verdadera felicidad.",
+				Description: "Barbie suffers an existential crisis and travels to the real world to find true happiness.",
 				ReleaseYear: 2023,
 				Duration:    114,
 				Rating:      7.0,
 				PosterURL:   "https://example.com/barbie.jpg",
 				TrailerURL:  "https://example.com/barbie-trailer.mp4",
-				GenreID:     &genres[1].ID, // Comedia
+				GenreID:     &genres[1].ID, // Comedy
 				DirectorID:  &directors[2].ID,
 			},
 			{
 				Title:       "Pulp Fiction",
-				Description: "Las vidas de dos sicarios de la mafia, un boxeador, la esposa de un gángster y dos bandidos se entrelazan en cuatro historias de violencia y redención.",
+				Description: "The lives of two mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption.",
 				ReleaseYear: 1994,
 				Duration:    154,
 				Rating:      8.9,
 				PosterURL:   "https://example.com/pulp-fiction.jpg",
 				TrailerURL:  "https://example.com/pulp-fiction-trailer.mp4",
-				GenreID:     &genres[0].ID, // Acción
+				GenreID:     &genres[0].ID, // Action
 				DirectorID:  &directors[1].ID,
 			},
 			{
 				Title:       "Poor Things",
-				Description: "La increíble evolución de Bella Baxter, una joven traída de vuelta a la vida por el brillante y poco ortodoxo Dr. Godwin Baxter.",
+				Description: "The incredible evolution of Bella Baxter, a young woman brought back to life by the brilliant and unorthodox scientist Dr. Godwin Baxter.",
 				ReleaseYear: 2023,
 				Duration:    141,
 				Rating:      8.4,
@@ -159,19 +159,19 @@ func seedData() {
 				MovieID: movies[0].ID,
 				UserID:  users[0].ID,
 				Rating:  9.0,
-				Comment: "Una obra maestra del cine. Nolan nunca decepciona.",
+				Comment: "A masterpiece of cinema. Nolan never disappoints.",
 			},
 			{
 				MovieID: movies[1].ID,
 				UserID:  users[1].ID,
 				Rating:  7.5,
-				Comment: "Divertida y con un mensaje importante. Margot Robbie está increíble.",
+				Comment: "Funny and with an important message. Margot Robbie is incredible.",
 			},
 			{
 				MovieID: movies[2].ID,
 				UserID:  users[2].ID,
 				Rating:  9.5,
-				Comment: "Clásico absoluto. Tarantino en su mejor momento.",
+				Comment: "Absolute classic. Tarantino at his best.",
 			},
 		}
 		DB.Create(&reviews)

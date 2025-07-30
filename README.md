@@ -1,104 +1,104 @@
-# Movie API Server - Concepto de API General
+# Movie API Server - General API Concept
 
-Una API REST moderna construida con Go, Fiber y SQLite para gestionar una base de datos de películas con géneros, directores, actores y reviews.
+A modern REST API built with Go, Gin and SQLite to manage a movie database with genres, directors, actors and reviews.
 
-## 🎬 Características
+## 🎬 Features
 
-- **Framework**: Fiber (Go)
-- **Base de Datos**: SQLite con GORM
-- **Validación**: go-playground/validator
-- **Entidades**: Películas, Géneros, Directores, Actores, Usuarios, Reviews
-- **Relaciones**: Many-to-many entre películas y actores
-- **Datos de Prueba**: Incluye películas populares con datos completos
+- **Framework**: Gin (Go)
+- **Database**: SQLite with GORM
+- **Validation**: go-playground/validator
+- **Entities**: Movies, Genres, Directors, Actors, Users, Reviews
+- **Relationships**: Many-to-many between movies and actors
+- **Sample Data**: Includes popular movies with complete data
 
-## 📋 Endpoints Disponibles
+## 📋 Available Endpoints
 
 ### Health Check
-- `GET /api/v1/health` - Estado de la API
+- `GET /health` - API status
 
-### Películas
-- `GET /api/v1/movies` - Listar películas (con filtros y paginación)
-- `GET /api/v1/movies/:id` - Obtener película por ID
-- `POST /api/v1/movies` - Crear nueva película
-- `PUT /api/v1/movies/:id` - Actualizar película
-- `DELETE /api/v1/movies/:id` - Eliminar película
-- `GET /api/v1/movies/search?title=inception` - Buscar películas por título
-- `GET /api/v1/movies/top-rated?limit=10` - Películas mejor valoradas
+### Movies
+- `GET /movies` - List movies (with filters and pagination)
+- `GET /movies/:id` - Get movie by ID
+- `POST /movies` - Create new movie
+- `PUT /movies/:id` - Update movie
+- `DELETE /movies/:id` - Delete movie
+- `GET /movies/search?title=inception` - Search movies by title
+- `GET /movies/top-rated?limit=10` - Top rated movies
 
-### Géneros
-- `GET /api/v1/genres/:id/movies` - Películas por género
+### Genres
+- `GET /genres/:id/movies` - Movies by genre
 
-### Directores
-- `GET /api/v1/directors/:id/movies` - Películas por director
+### Directors
+- `GET /directors/:id/movies` - Movies by director
 
-### Actores
-- `GET /api/v1/actors/:id/movies` - Películas por actor
+### Actors
+- `GET /actors/:id/movies` - Movies by actor
 
-### Parámetros de Consulta
-- `page` - Número de página (default: 1)
-- `limit` - Elementos por página (default: 10, max: 100)
-- `genre_id` - Filtrar por género
-- `director_id` - Filtrar por director
-- `min_rating` - Filtrar por rating mínimo
-- `title` - Buscar por título (para endpoint search)
+### Query Parameters
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 10, max: 100)
+- `genre_id` - Filter by genre
+- `director_id` - Filter by director
+- `min_rating` - Filter by minimum rating
+- `title` - Search by title (for search endpoint)
 
-## 🛠️ Instalación y Uso
+## 🛠️ Installation and Usage
 
-### Prerrequisitos
-- Go 1.21 o superior
+### Prerequisites
+- Go 1.21 or higher
 
-### Instalación
+### Installation
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone <repository-url>
 cd api-server
 
-# Instalar dependencias
+# Install dependencies
 go mod tidy
 
-# Ejecutar la aplicación
+# Run the application
 go run main.go
 ```
 
-La API estará disponible en `http://localhost:4444`
+The API will be available at `http://localhost:4444`
 
-### Datos de Prueba
-La aplicación incluye datos de ejemplo:
-- **6 géneros**: Acción, Comedia, Drama, Terror, Ciencia Ficción, Romance
-- **3 directores**: Christopher Nolan, Quentin Tarantino, Greta Gerwig
-- **4 actores**: Leonardo DiCaprio, Margot Robbie, Tom Hardy, Emma Stone
-- **4 películas**: Inception, Barbie, Pulp Fiction, Poor Things
-- **3 usuarios** con reviews
+### Sample Data
+The application includes sample data:
+- **6 genres**: Action, Comedy, Drama, Horror, Science Fiction, Romance
+- **3 directors**: Christopher Nolan, Quentin Tarantino, Greta Gerwig
+- **4 actors**: Leonardo DiCaprio, Margot Robbie, Tom Hardy, Emma Stone
+- **4 movies**: Inception, Barbie, Pulp Fiction, Poor Things
+- **3 users** with reviews
 
-## 📝 Ejemplos de Uso
+## 📝 Usage Examples
 
-### Listar todas las películas
+### List all movies
 ```bash
-curl http://localhost:4444/api/v1/movies
+curl http://localhost:4444/movies
 ```
 
-### Buscar películas por título
+### Search movies by title
 ```bash
-curl "http://localhost:4444/api/v1/movies/search?title=inception"
+curl "http://localhost:4444/movies/search?title=inception"
 ```
 
-### Filtrar películas por género
+### Filter movies by genre
 ```bash
-curl "http://localhost:4444/api/v1/movies?genre_id=1&min_rating=8.0"
+curl "http://localhost:4444/movies?genre_id=1&min_rating=8.0"
 ```
 
-### Obtener películas mejor valoradas
+### Get top rated movies
 ```bash
-curl "http://localhost:4444/api/v1/movies/top-rated?limit=5"
+curl "http://localhost:4444/movies/top-rated?limit=5"
 ```
 
-### Crear una nueva película
+### Create a new movie
 ```bash
-curl -X POST http://localhost:4444/api/v1/movies \
+curl -X POST http://localhost:4444/movies \
   -H "Content-Type: application/json" \
   -d '{
     "title": "The Matrix",
-    "description": "Un programador descubre que la realidad es una simulación",
+    "description": "A programmer discovers that reality is a simulation",
     "release_year": 1999,
     "duration": 136,
     "rating": 8.7,
@@ -110,93 +110,93 @@ curl -X POST http://localhost:4444/api/v1/movies \
   }'
 ```
 
-### Obtener película por ID
+### Get movie by ID
 ```bash
-curl http://localhost:4444/api/v1/movies/1
+curl http://localhost:4444/movies/1
 ```
 
-### Películas por director
+### Movies by director
 ```bash
-curl http://localhost:4444/api/v1/directors/1/movies
+curl http://localhost:4444/directors/1/movies
 ```
 
-## 🗄️ Estructura de la Base de Datos
+## 🗄️ Database Structure
 
-### Películas
-- `id` - ID único
-- `title` - Título de la película
-- `description` - Descripción
-- `release_year` - Año de lanzamiento
-- `duration` - Duración en minutos
-- `rating` - Calificación (0-10)
-- `poster_url` - URL del poster
-- `trailer_url` - URL del trailer
-- `genre_id` - ID del género
-- `director_id` - ID del director
-- `created_at` - Fecha de creación
-- `updated_at` - Fecha de actualización
+### Movies
+- `id` - Unique ID
+- `title` - Movie title
+- `description` - Description
+- `release_year` - Release year
+- `duration` - Duration in minutes
+- `rating` - Rating (0-10)
+- `poster_url` - Poster URL
+- `trailer_url` - Trailer URL
+- `genre_id` - Genre ID
+- `director_id` - Director ID
+- `created_at` - Creation date
+- `updated_at` - Update date
 
-### Géneros
-- `id` - ID único
-- `name` - Nombre del género
-- `description` - Descripción
-- `created_at` - Fecha de creación
-- `updated_at` - Fecha de actualización
+### Genres
+- `id` - Unique ID
+- `name` - Genre name
+- `description` - Description
+- `created_at` - Creation date
+- `updated_at` - Update date
 
-### Directores
-- `id` - ID único
-- `name` - Nombre del director
-- `biography` - Biografía
-- `birth_date` - Fecha de nacimiento
-- `nationality` - Nacionalidad
-- `created_at` - Fecha de creación
-- `updated_at` - Fecha de actualización
+### Directors
+- `id` - Unique ID
+- `name` - Director name
+- `biography` - Biography
+- `birth_date` - Birth date
+- `nationality` - Nationality
+- `created_at` - Creation date
+- `updated_at` - Update date
 
-### Actores
-- `id` - ID único
-- `name` - Nombre del actor
-- `biography` - Biografía
-- `birth_date` - Fecha de nacimiento
-- `nationality` - Nacionalidad
-- `created_at` - Fecha de creación
-- `updated_at` - Fecha de actualización
+### Actors
+- `id` - Unique ID
+- `name` - Actor name
+- `biography` - Biography
+- `birth_date` - Birth date
+- `nationality` - Nationality
+- `created_at` - Creation date
+- `updated_at` - Update date
 
 ### Reviews
-- `id` - ID único
-- `movie_id` - ID de la película
-- `user_id` - ID del usuario
-- `rating` - Calificación (1-10)
-- `comment` - Comentario
-- `created_at` - Fecha de creación
-- `updated_at` - Fecha de actualización
+- `id` - Unique ID
+- `movie_id` - Movie ID
+- `user_id` - User ID
+- `rating` - Rating (1-10)
+- `comment` - Comment
+- `created_at` - Creation date
+- `updated_at` - Update date
 
-### Usuarios
-- `id` - ID único
-- `username` - Nombre de usuario
+### Users
+- `id` - Unique ID
+- `username` - Username
 - `email` - Email
-- `created_at` - Fecha de creación
-- `updated_at` - Fecha de actualización
+- `created_at` - Creation date
+- `updated_at` - Update date
 
-## 🔧 Configuración
+## 🔧 Configuration
 
-La aplicación usa SQLite por defecto. El archivo de base de datos se crea automáticamente como `api_server.db` en el directorio raíz.
+The application uses SQLite by default. The database file is automatically created as `api_server.db` in the root directory.
 
-## 🧪 Próximas Mejoras
+## 🧪 Future Improvements
 
-- [ ] Autenticación JWT
-- [ ] Sistema de watchlist
-- [ ] Recomendaciones basadas en preferencias
-- [ ] Documentación Swagger
-- [ ] Tests unitarios
-- [ ] Cache con Redis
-- [ ] Búsqueda avanzada (por actor, director)
-- [ ] Subida de archivos (posters, trailers)
-- [ ] Logs estructurados
-- [ ] Métricas y monitoreo
-- [ ] API para géneros, directores y actores (CRUD completo)
+- [ ] JWT Authentication
+- [ ] Watchlist system
+- [ ] Recommendations based on preferences
+- [ ] Swagger documentation
+- [ ] Unit tests
+- [ ] Redis cache
+- [ ] Advanced search (by actor, director)
+- [ ] File upload (posters, trailers)
+- [ ] Structured logging
+- [ ] Metrics and monitoring
+- [ ] Complete CRUD API for genres, directors and actors
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto es para fines educativos y de demostración.
+This project is for educational and demonstration purposes.
 
 

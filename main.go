@@ -5,35 +5,32 @@ import (
 	"api-server/service"
 	"log"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// Initialize database
 	database.InitDB()
 
-	// Create Fiber app
-	app := fiber.New(fiber.Config{
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			code := fiber.StatusInternalServerError
-			if e, ok := err.(*fiber.Error); ok {
-				code = e.Code
-			}
-			return c.Status(code).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		},
-	})
+	// Create Gin app
+	gin.SetMode(gin.ReleaseMode)
+	app := gin.New()
 
 	// Middleware
-	app.Use(logger.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET, POST, PUT, DELETE, PATCH",
-	}))
+	app.Use(gin.Logger())
+	app.Use(gin.Recovery())
+	app.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH")
+		
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		
+		c.Next()
+	})
 
 	// Setup routes
 	movieService := service.NewService()
@@ -41,5 +38,5 @@ func main() {
 
 	// Start server
 	log.Println("🚀 Server starting on port 4444...")
-	log.Fatal(app.Listen(":4444"))
+	log.Fatal(app.Run(":4444"))
 }

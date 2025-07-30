@@ -2,7 +2,7 @@ package service
 
 import (
 	"api-server/repository"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type MovieService struct {
@@ -10,16 +10,16 @@ type MovieService struct {
 }
 
 type Service interface {
-	Get(c *fiber.Ctx) error
-	Find(c *fiber.Ctx) error
-	Create(c *fiber.Ctx) error
-	Update(c *fiber.Ctx) error
-	Remove(c *fiber.Ctx) error
-	Search(c *fiber.Ctx) error
-	TopRated(c *fiber.Ctx) error
-	ByGenre(c *fiber.Ctx) error
-	ByDirector(c *fiber.Ctx) error
-	ByActor(c *fiber.Ctx) error
+	Get(c *gin.Context)
+	Find(c *gin.Context)
+	Create(c *gin.Context)
+	Update(c *gin.Context)
+	Remove(c *gin.Context)
+	Search(c *gin.Context)
+	TopRated(c *gin.Context)
+	ByGenre(c *gin.Context)
+	ByDirector(c *gin.Context)
+	ByActor(c *gin.Context)
 }
 
 func NewService() Service {

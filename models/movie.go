@@ -11,7 +11,7 @@ type Movie struct {
 	Title       string         `json:"title" validate:"required"`
 	Description string         `json:"description"`
 	ReleaseYear int            `json:"release_year" validate:"min=1888,max=2030"`
-	Duration    int            `json:"duration" validate:"min=1"` // en minutos
+	Duration    int            `json:"duration" validate:"min=1"` // in minutes
 	Rating      float64        `json:"rating" validate:"min=0,max=10"`
 	PosterURL   string         `json:"poster_url"`
 	TrailerURL  string         `json:"trailer_url"`
