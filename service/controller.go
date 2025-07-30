@@ -6,35 +6,37 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
-func (s *MovieService) Get(c *fiber.Ctx) error {
-	idStr := c.Params("id")
+func (s *MovieService) Get(c *gin.Context) {
+	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid ID format",
 		})
+		return
 	}
 
 	movie, err := s.repo.FindByID(uint(id))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"data": movie,
 	})
 }
 
-func (s *MovieService) Find(c *fiber.Ctx) error {
+func (s *MovieService) Find(c *gin.Context) {
 	// Parse query parameters
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	genreIDStr := c.Query("genre_id")
 	directorIDStr := c.Query("director_id")
 	minRatingStr := c.Query("min_rating")
@@ -71,14 +73,15 @@ func (s *MovieService) Find(c *fiber.Ctx) error {
 
 	movies, total, err := s.repo.FindAll(page, limit, genreID, directorID, minRating)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"data": movies,
-		"pagination": fiber.Map{
+		"pagination": gin.H{
 			"page":  page,
 			"limit": limit,
 			"total": total,
@@ -86,20 +89,22 @@ func (s *MovieService) Find(c *fiber.Ctx) error {
 	})
 }
 
-func (s *MovieService) Create(c *fiber.Ctx) error {
+func (s *MovieService) Create(c *gin.Context) {
 	var req models.MovieCreateRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request body",
 		})
+		return
 	}
 
 	// Validate request
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	movie := models.Movie{
@@ -115,9 +120,10 @@ func (s *MovieService) Create(c *fiber.Ctx) error {
 	}
 
 	if err := s.repo.Create(&movie); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	// Associate actors if provided
@@ -130,38 +136,42 @@ func (s *MovieService) Create(c *fiber.Ctx) error {
 	// Get the created movie with relations
 	createdMovie, err := s.repo.FindByID(movie.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Movie created but could not retrieve data",
 		})
+		return
 	}
 
-	return c.Status(http.StatusCreated).JSON(fiber.Map{
+	c.JSON(http.StatusCreated, gin.H{
 		"data": createdMovie,
 	})
 }
 
-func (s *MovieService) Update(c *fiber.Ctx) error {
-	idStr := c.Params("id")
+func (s *MovieService) Update(c *gin.Context) {
+	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid ID format",
 		})
+		return
 	}
 
 	var req models.MovieUpdateRequest
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request body",
 		})
+		return
 	}
 
 	// Validate request
 	validate := validator.New()
 	if err := validate.Struct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	// Build updates map
@@ -195,9 +205,10 @@ func (s *MovieService) Update(c *fiber.Ctx) error {
 	}
 
 	if err := s.repo.Update(uint(id), updates); err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	// Update actors if provided
@@ -212,46 +223,50 @@ func (s *MovieService) Update(c *fiber.Ctx) error {
 	// Get updated movie
 	movie, err := s.repo.FindByID(uint(id))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Movie updated but could not retrieve updated data",
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"data": movie,
 	})
 }
 
-func (s *MovieService) Remove(c *fiber.Ctx) error {
-	idStr := c.Params("id")
+func (s *MovieService) Remove(c *gin.Context) {
+	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid ID format",
 		})
+		return
 	}
 
 	if err := s.repo.Delete(uint(id)); err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Movie deleted successfully",
 	})
 }
 
-func (s *MovieService) Search(c *fiber.Ctx) error {
+func (s *MovieService) Search(c *gin.Context) {
 	title := c.Query("title")
 	if title == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Title parameter is required",
 		})
+		return
 	}
 
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
 	if page < 1 {
 		page = 1
@@ -262,14 +277,15 @@ func (s *MovieService) Search(c *fiber.Ctx) error {
 
 	movies, total, err := s.repo.SearchByTitle(title, page, limit)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"data": movies,
-		"pagination": fiber.Map{
+		"pagination": gin.H{
 			"page":  page,
 			"limit": limit,
 			"total": total,
@@ -277,35 +293,37 @@ func (s *MovieService) Search(c *fiber.Ctx) error {
 	})
 }
 
-func (s *MovieService) TopRated(c *fiber.Ctx) error {
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+func (s *MovieService) TopRated(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	if limit < 1 || limit > 50 {
 		limit = 10
 	}
 
 	movies, err := s.repo.GetTopRated(limit)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"data": movies,
 	})
 }
 
-func (s *MovieService) ByGenre(c *fiber.Ctx) error {
-	genreIDStr := c.Params("id")
+func (s *MovieService) ByGenre(c *gin.Context) {
+	genreIDStr := c.Param("id")
 	genreID, err := strconv.ParseUint(genreIDStr, 10, 32)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid genre ID format",
 		})
+		return
 	}
 
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
 	if page < 1 {
 		page = 1
@@ -316,14 +334,15 @@ func (s *MovieService) ByGenre(c *fiber.Ctx) error {
 
 	movies, total, err := s.repo.FindByGenre(uint(genreID), page, limit)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"data": movies,
-		"pagination": fiber.Map{
+		"pagination": gin.H{
 			"page":  page,
 			"limit": limit,
 			"total": total,
@@ -331,17 +350,18 @@ func (s *MovieService) ByGenre(c *fiber.Ctx) error {
 	})
 }
 
-func (s *MovieService) ByDirector(c *fiber.Ctx) error {
-	directorIDStr := c.Params("id")
+func (s *MovieService) ByDirector(c *gin.Context) {
+	directorIDStr := c.Param("id")
 	directorID, err := strconv.ParseUint(directorIDStr, 10, 32)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid director ID format",
 		})
+		return
 	}
 
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
 	if page < 1 {
 		page = 1
@@ -352,14 +372,15 @@ func (s *MovieService) ByDirector(c *fiber.Ctx) error {
 
 	movies, total, err := s.repo.FindByDirector(uint(directorID), page, limit)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"data": movies,
-		"pagination": fiber.Map{
+		"pagination": gin.H{
 			"page":  page,
 			"limit": limit,
 			"total": total,
@@ -367,17 +388,18 @@ func (s *MovieService) ByDirector(c *fiber.Ctx) error {
 	})
 }
 
-func (s *MovieService) ByActor(c *fiber.Ctx) error {
-	actorIDStr := c.Params("id")
+func (s *MovieService) ByActor(c *gin.Context) {
+	actorIDStr := c.Param("id")
 	actorID, err := strconv.ParseUint(actorIDStr, 10, 32)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid actor ID format",
 		})
+		return
 	}
 
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
 	if page < 1 {
 		page = 1
@@ -388,14 +410,15 @@ func (s *MovieService) ByActor(c *fiber.Ctx) error {
 
 	movies, total, err := s.repo.FindByActor(uint(actorID), page, limit)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
+	c.JSON(http.StatusOK, gin.H{
 		"data": movies,
-		"pagination": fiber.Map{
+		"pagination": gin.H{
 			"page":  page,
 			"limit": limit,
 			"total": total,
